@@ -13,6 +13,8 @@ import javax.annotation.PostConstruct;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +31,11 @@ public class APIService {
 	@Autowired
 	public RestApiService restSvc;
 
+	final static Logger logger = LoggerFactory.getLogger(APIService.class);
+
 	@SuppressWarnings("unchecked")
 	public int getUniqueCount() throws JsonParseException, JsonMappingException, IOException {
+		logger.info("Getting unique number of facts from all facts");
 		int count = 0;
 		List<Facts> factlist = getAllFactList();
 		count = (factlist != null) ? factlist.size() : 0;
@@ -39,6 +44,7 @@ public class APIService {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List getfactIds() throws JsonParseException, JsonMappingException, IOException {
+		logger.info("Preparing all facts id's");
 		List<Facts> factlist = getAllFactList();
 		List idlist = factlist.stream().map(Facts::getId).distinct().collect(Collectors.toList());
 		return idlist;
@@ -47,6 +53,7 @@ public class APIService {
 	@SuppressWarnings("unchecked")
 	public Facts getFactsById(String factId, String trgtLang)
 			throws JsonParseException, JsonMappingException, IOException {
+		logger.info("Fetching facts details by using fact id : {}", factId);
 		List<Facts> factlist = getAllFactList();
 		Map<String, Facts> factMap = factlist.stream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 		if (factMap.containsKey(factId)) {
@@ -81,8 +88,9 @@ public class APIService {
 	@PostConstruct
 	@SuppressWarnings("unchecked")
 	private void init() throws JsonProcessingException {
-		Map<String,JSONObject> factsMap = new HashMap<String, JSONObject>();
+		Map<String, JSONObject> factsMap = new HashMap<String, JSONObject>();
 		JSONArray factsList = new JSONArray();
+		logger.info("Fetching random facts.");
 		for (int i = 0; i < FactConstants.FACTCOUNT; i++) {
 			try {
 				JSONObject result = restSvc.fetchFromrandomFactlessApi();
@@ -95,7 +103,6 @@ public class APIService {
 			}
 		}
 		if (factsList.size() > 0) {
-			System.out.println("Unique Items : " + factsList.size());
 			saveFactsToFile(factsList);
 		}
 	}

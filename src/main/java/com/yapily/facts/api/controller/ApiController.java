@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,8 @@ public class ApiController {
 
 	@Autowired
 	public APIService apiSvc;
+	
+	final static Logger logger = LoggerFactory.getLogger(APIService.class);
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping(value = "/status", method = RequestMethod.GET)
@@ -40,6 +44,7 @@ public class ApiController {
 				response.put("facts", factsresp);
 			}
 		} catch (Exception e) {
+			logger.info("ERROR OCCURED WHILE FETCHING FACTS !!");
 			response.put("status", "ERROR OCCURED WHILE FETCHING FACTS");
 		}
 		return new ResponseEntity(response, HttpStatus.OK);
@@ -58,6 +63,7 @@ public class ApiController {
 			throws JsonParseException, JsonMappingException, IOException {
 		Facts fact = apiSvc.getFactsById(factId, trgtLang);
 		if (fact == null) {
+			logger.info("Failed to get the Fact by given ID and language");
 			return new ResponseEntity("Failed to get the Fact by given ID and language", HttpStatus.OK);
 		}
 		return new ResponseEntity(fact, HttpStatus.OK);

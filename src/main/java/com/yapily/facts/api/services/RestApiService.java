@@ -1,7 +1,5 @@
 package com.yapily.facts.api.services;
 
-import java.util.List;
-
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -12,8 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yapily.facts.api.config.FactConstants;
@@ -30,9 +26,6 @@ public class RestApiService {
 	@Value("${yandex.base.url}")
 	private String baseUrl;
 
-//	@Autowired
-//	private MetricRegistry registry;
-
 	public JSONObject fetchFromrandomFactlessApi() throws ParseException, JsonProcessingException {
 		final String uri = "https://uselessfacts.jsph.pl/random.json?language=en";
 		RestTemplate restTemplate = new RestTemplate();
@@ -45,9 +38,7 @@ public class RestApiService {
 	}
 
 	public String getTranslatedText(String text, String lang) {
-//		logger.info("Text {}, Lang {}", text, lang);
-		MetricRegistry registry = new MetricRegistry();
-		Counter thirdPartyRequests = registry.counter("yandex.requests");
+		logger.info("Translating text {} in Language {}", text, lang);
 		RestTemplate template = new RestTemplate();
 		StringBuilder url = new StringBuilder(baseUrl);
 		url.append(FactConstants.TRANSLATION_URL);
@@ -55,7 +46,6 @@ public class RestApiService {
 		url.append(FactConstants.TEXT_TO_TRANSLATE).append("=").append(text).append("&");
 		url.append(FactConstants.TARGET_LANGUAGE).append("=").append(lang);
 		ResponseEntity<Translation> translatedEntity = template.getForEntity(url.toString(), Translation.class);
-		thirdPartyRequests.inc();
 
 		return translatedEntity.getBody().getText().get(0);
 	}
